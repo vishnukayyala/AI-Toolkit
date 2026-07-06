@@ -1,0 +1,48 @@
+{#
+  404.html — Custom 404 Error Page
+  Extends base.html.
+  Rendered by: @app.errorhandler(404) → page_not_found(error) in app.py
+
+  INTERVIEW TIP: Custom error pages are professional UX.
+  Flask's errorhandler decorator intercepts HTTP 404 responses
+  (from abort(404) calls or unmatched routes) and renders this template.
+  The "return render_template('404.html'), 404" in app.py explicitly
+  sets the HTTP status code to 404 (not 200).
+#}
+{% extends "base.html" %}
+
+{% block title %}Page Not Found · AI Toolkit{% endblock %}
+
+{% block content %}
+<div class="page-body">
+  <div class="error-state">
+
+    <div class="error-code" aria-hidden="true">404</div>
+
+    <h1 class="error-title">Page Not Found</h1>
+
+    <p class="error-message">
+      This page doesn't exist — the tool might have moved, or you followed a broken link.
+    </p>
+
+    <div class="error-actions">
+      <a href="{{ url_for('home') }}" class="btn btn-primary">
+        ← Back to Home
+      </a>
+    </div>
+
+    {# Quick category links to help users find what they needed #}
+    <div class="empty-suggestions" style="margin-top: 3rem;">
+      <p class="empty-suggestions-label">Or browse by category:</p>
+      <div class="suggestion-pills">
+        {% for cat in categories %}
+        <a href="{{ url_for('category', category_name=cat) }}" class="pill">
+          {{ emojis.get(cat, '') }} {{ cat }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

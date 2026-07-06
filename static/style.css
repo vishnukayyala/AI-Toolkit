@@ -1,0 +1,1091 @@
+/* ============================================================
+   AI Toolkit — Netflix-Dark Stylesheet
+   Author: Vishnu
+
+   DESIGN TOKENS (CSS custom properties):
+   All colours and sizes are defined once here as variables.
+   Change --color-red to change the accent colour everywhere.
+   This is similar to a design token system (like Tailwind's config).
+   ============================================================ */
+
+/* ── RESET & CUSTOM PROPERTIES ─────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Colour palette — Netflix-inspired dark theme */
+  --color-bg:          #141414;   /* page background */
+  --color-surface:     #181818;   /* card background */
+  --color-surface-2:   #222222;   /* slightly lighter surface */
+  --color-border:      #2a2a2a;   /* subtle borders */
+  --color-red:         #E50914;   /* Netflix red — primary accent */
+  --color-red-hover:   #c40812;   /* red on hover */
+  --color-text:        #ffffff;   /* primary text */
+  --color-text-sub:    #e5e5e5;   /* secondary text */
+  --color-text-muted:  #999999;   /* muted/placeholder text */
+
+  /* Typography */
+  --font-family:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs:   0.75rem;   /* 12px */
+  --font-size-sm:   0.875rem;  /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg:   1.125rem;  /* 18px */
+  --font-size-xl:   1.25rem;   /* 20px */
+  --font-size-2xl:  1.5rem;    /* 24px */
+  --font-size-3xl:  1.875rem;  /* 30px */
+  --font-size-4xl:  2.25rem;   /* 36px */
+
+  /* Spacing scale (multiples of 4px) */
+  --space-1:  0.25rem;  /* 4px  */
+  --space-2:  0.5rem;   /* 8px  */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* Layout */
+  --navbar-height: 64px;
+  --page-max-width: 1400px;
+  --page-padding:   4vw;         /* responsive horizontal padding */
+  --card-width:     180px;       /* width of cards in horizontal rows */
+  --card-width-lg:  200px;
+
+  /* Effects */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-full: 9999px;
+  --transition:  0.2s ease;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+/* ── BASE STYLES ────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  min-height: 100dvh;           /* dvh = dynamic viewport height (works on mobile) */
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── SCROLLBAR ──────────────────────────────────────────── */
+
+::-webkit-scrollbar       { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: #444; border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: #666; }
+
+
+/* ══════════════════════════════════════════════════════════
+   NAVBAR
+   Fixed at top. Transparent initially, dark on scroll.
+   'scrolled' class is toggled by the 3-line JS in base.html.
+   ══════════════════════════════════════════════════════════ */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  /* Gradient: opaque at top, fades to transparent — matches Netflix */
+  background: linear-gradient(to bottom, rgba(20,20,20,0.95) 0%, transparent 100%);
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+/* Once user scrolls 60px, the JS adds .scrolled — navbar becomes solid */
+.navbar.scrolled {
+  background: rgba(20, 20, 20, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--navbar-height);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+.navbar-logo {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-red);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  transition: color var(--transition);
+}
+.navbar-logo:hover { color: #ff1a25; }
+
+.navbar-cats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  overflow: hidden;             /* hides overflow cats on small screens */
+}
+
+.nav-cat {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-sub);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: color var(--transition), background var(--transition);
+}
+.nav-cat:hover       { color: var(--color-text); background: rgba(255,255,255,0.06); }
+.nav-cat.active      { color: var(--color-text); font-weight: 700; }
+
+/* ── SEARCH FORM ────────────────────────────────────────── */
+
+.search-form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+  padding: 0 var(--space-4) 0 var(--space-3);
+  gap: var(--space-2);
+  transition: border-color var(--transition), background var(--transition);
+  flex-shrink: 0;
+}
+.search-form:focus-within {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  width: 180px;
+  height: 38px;
+}
+.search-input::placeholder { color: var(--color-text-muted); }
+
+.search-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color var(--transition);
+}
+.search-btn:hover { color: var(--color-text); }
+.search-btn svg { width: 16px; height: 16px; }
+
+/* ── HAMBURGER (mobile) ─────────────────────────────────── */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  margin-left: auto;
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+/* ── MOBILE MENU ────────────────────────────────────────── */
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--page-padding) var(--space-4);
+  background: rgba(20, 20, 20, 0.98);
+  border-top: 1px solid var(--color-border);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.mobile-menu.open {
+  max-height: 500px;
+  padding-top: var(--space-3);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   HERO SECTION
+   Background gradient uses hero_rgba computed in Python.
+   Inline style is: background: linear-gradient(...)
+   defined in the template itself.
+   ══════════════════════════════════════════════════════════ */
+
+.hero {
+  padding-top: calc(var(--navbar-height) + 80px);
+  padding-bottom: 80px;
+  padding-left: var(--page-padding);
+  padding-right: var(--page-padding);
+  min-height: 520px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero-content {
+  max-width: 580px;
+}
+
+.hero-badge {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-red);
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
+
+.hero-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-lg);
+  font-size: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.hero-title {
+  font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-4xl));
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+}
+
+.hero-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-sub);
+  line-height: 1.65;
+  margin-bottom: var(--space-5);
+  max-width: 460px;
+  /* Clamp to 3 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-tag {
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-6);
+  transition: background var(--transition);
+}
+.hero-tag:hover { background: rgba(255,255,255,0.16); }
+
+.hero-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  border: 2px solid transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  min-height: 44px;  /* accessibility: min touch target */
+}
+
+.btn-primary {
+  background: var(--color-red);
+  color: #fff;
+  border-color: var(--color-red);
+}
+.btn-primary:hover {
+  background: var(--color-red-hover);
+  border-color: var(--color-red-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(229, 9, 20, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.1);
+  color: var(--color-text);
+  border-color: rgba(255,255,255,0.2);
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+
+.btn-large {
+  padding: 14px 32px;
+  font-size: var(--font-size-base);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PAGE BODY — shared container for all pages
+   ══════════════════════════════════════════════════════════ */
+
+.page-body {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--page-padding) var(--space-16);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   CONTENT ROWS — horizontal scroll rows (homepage)
+   overflow-x: auto clips transform: scale(), so we use
+   box-shadow glow on hover instead of scale for row cards.
+   ══════════════════════════════════════════════════════════ */
+
+.content-row {
+  margin-bottom: var(--space-10);
+}
+
+.row-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.row-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.row-see-all {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+.row-see-all:hover { color: var(--color-text); }
+
+/* The scrollable track */
+.row-track {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--space-4);   /* space for scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
+}
+/* Hide scrollbar on WebKit while keeping scroll functionality */
+.row-track::-webkit-scrollbar { height: 4px; }
+.row-track::-webkit-scrollbar-track { background: transparent; }
+.row-track::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+
+/* ══════════════════════════════════════════════════════════
+   TOOL CARDS — Row variant (horizontal scroll)
+   Width is fixed so they line up neatly.
+   Hover effect: glow + subtle border — NOT scale (scale clips in overflow:auto).
+   ══════════════════════════════════════════════════════════ */
+
+.tool-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  /* Snap to the start of each card when scrolling */
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: var(--card-width);
+}
+
+/* Row card hover: glow effect (no scale — avoids overflow clip) */
+.row-track .tool-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1), var(--shadow-hover);
+}
+
+/* ── Card Logo ────────────────────────────────────────── */
+
+.card-logo {
+  width: 100%;
+  aspect-ratio: 1.6 / 1;  /* wider than square to show emoji nicely */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: relative;
+}
+
+/* ── Card Main Link ───────────────────────────────────── */
+
+.card-link-main {
+  display: block;           /* block so it fills the width */
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+}
+
+/* The hover overlay that fades in over the logo */
+.card-overlay {
+  position: absolute;
+  inset: 0;                 /* shorthand for top/right/bottom/left: 0 */
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;               /* hidden by default */
+  transition: opacity var(--transition);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.card-link-main:hover .card-overlay { opacity: 1; }
+
+.overlay-text {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* ── Card Body (name + category + description) ────────── */
+
+.card-body {
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.card-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-cat {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+.card-cat-link { color: var(--color-text-muted); }
+.card-cat-link:hover { color: var(--color-red); }
+
+.card-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Card Details Link ────────────────────────────────── */
+
+.card-link-details {
+  display: block;
+  text-align: center;
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) var(--space-3) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  min-height: 32px;
+  line-height: 20px;
+}
+.card-link-details:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.15);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   TRENDING CARDS — row cards with big rank numbers
+   ══════════════════════════════════════════════════════════ */
+
+.trending-card {
+  min-width: 160px;
+  width: 160px;
+  padding-left: var(--space-6);  /* leave room for the rank number */
+}
+
+.rank-number {
+  position: absolute;
+  left: -10px;
+  bottom: 4px;
+  font-size: 5rem;
+  font-weight: 900;
+  color: var(--color-border);
+  line-height: 1;
+  /* Text stroke for a Netflix-style outlined number */
+  -webkit-text-stroke: 2px #3a3a3a;
+  text-stroke: 2px #3a3a3a;
+  color: transparent;
+  pointer-events: none;
+  select: none;
+  z-index: 0;
+}
+
+.trending-card .card-info {
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.trending-card .card-name { font-size: var(--font-size-sm); font-weight: 700; }
+.trending-card .card-cat  { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+/* Visit hint for trending cards */
+.trending-card .card-link-main {
+  order: -1;  /* logo at top */
+}
+
+.card-visit-hint {
+  display: none;  /* Hidden — trending card uses overlay instead */
+}
+
+.trending-badge {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   TOOL GRID — used on search, category, and detail pages
+   Grid cards CAN use scale because they're not inside overflow:auto.
+   ══════════════════════════════════════════════════════════ */
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Grid cards: scale on hover (safe here — no overflow:auto parent) */
+.grid-card {
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.grid-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: var(--shadow-hover);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PAGE HEADER — used on search, category pages
+   ══════════════════════════════════════════════════════════ */
+
+.page-header {
+  margin-bottom: var(--space-8);
+  padding-top: calc(var(--navbar-height) + var(--space-8));
+}
+
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+}
+
+.highlight {
+  color: var(--color-red);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  transition: color var(--transition);
+}
+.back-link:hover { color: var(--color-text); }
+
+
+/* ══════════════════════════════════════════════════════════
+   CATEGORY PAGE
+   ══════════════════════════════════════════════════════════ */
+
+.category-header { text-align: center; }
+
+.category-hero-icon {
+  font-size: 3.5rem;
+  margin-bottom: var(--space-4);
+}
+
+.category-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   TOOL DETAIL PAGE
+   ══════════════════════════════════════════════════════════ */
+
+.detail-hero {
+  padding-top: calc(var(--navbar-height) + 60px);
+  padding-bottom: 60px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detail-hero-inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+  transition: color var(--transition);
+}
+.detail-back:hover { color: var(--color-text); }
+
+.detail-top {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+.detail-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-lg);
+  font-size: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+}
+
+.detail-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-name {
+  font-size: var(--font-size-4xl);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-3);
+}
+
+.detail-tags {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+.tag-category {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: background var(--transition);
+}
+.tag-category:hover { background: rgba(255,255,255,0.14); }
+
+.tag-trending {
+  background: rgba(229,9,20,0.12);
+  border: 1px solid rgba(229,9,20,0.3);
+  color: #ff4d55;
+}
+
+.detail-description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-sub);
+  line-height: 1.75;
+  margin-bottom: var(--space-6);
+  max-width: 600px;
+}
+
+.detail-body { padding-top: var(--space-8); }
+
+/* Info cards row */
+.info-cards {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+  flex-wrap: wrap;
+}
+
+.info-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 160px;
+  flex: 1;
+}
+
+.info-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.info-link {
+  color: var(--color-red);
+  word-break: break-all;
+  transition: color var(--transition);
+}
+.info-link:hover { color: #ff4d55; }
+
+
+/* ══════════════════════════════════════════════════════════
+   RELATED TOOLS / BROWSE SECTION
+   ══════════════════════════════════════════════════════════ */
+
+.related-section { margin-top: var(--space-12); }
+
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-5);
+}
+
+.related-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PILLS — category filter chips
+   ══════════════════════════════════════════════════════════ */
+
+.suggestion-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pill {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-sub);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  cursor: pointer;
+}
+.pill:hover {
+  background: var(--color-surface-2);
+  border-color: rgba(255,255,255,0.2);
+  color: var(--color-text);
+}
+
+.pill-active {
+  background: var(--color-red);
+  border-color: var(--color-red);
+  color: #fff;
+}
+.pill-active:hover {
+  background: var(--color-red-hover);
+  border-color: var(--color-red-hover);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   EMPTY STATE & ERROR STATE
+   ══════════════════════════════════════════════════════════ */
+
+.empty-state,
+.error-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-8);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+}
+
+.empty-title,
+.error-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin-bottom: var(--space-3);
+}
+
+.empty-message,
+.error-message {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+  line-height: 1.65;
+}
+
+.empty-suggestions { margin-top: var(--space-8); }
+
+.empty-suggestions-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.error-code {
+  font-size: 8rem;
+  font-weight: 900;
+  color: var(--color-red);
+  line-height: 1;
+  margin-bottom: var(--space-4);
+  opacity: 0.6;
+}
+
+.error-actions { display: flex; gap: var(--space-3); justify-content: center; }
+
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════ */
+
+.footer {
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-8) var(--page-padding);
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.footer-logo {
+  font-weight: 700;
+  color: var(--color-red);
+}
+
+.footer-divider { opacity: 0.4; }
+
+.footer-links {
+  display: flex;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.footer-link {
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+.footer-link:hover { color: var(--color-text); }
+
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (≤ 768px)
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  :root {
+    --card-width: 150px;
+    --page-padding: 5vw;
+  }
+
+  /* Hide category nav links on mobile — they're in the hamburger menu */
+  .navbar-cats { display: none; }
+  .hamburger   { display: flex; }
+  .mobile-menu { display: flex; }
+
+  /* Search form shrinks */
+  .search-input { width: 120px; }
+
+  /* Hero */
+  .hero {
+    padding-top: calc(var(--navbar-height) + 40px);
+    padding-bottom: 40px;
+    min-height: 400px;
+  }
+  .hero-title { font-size: var(--font-size-2xl); }
+
+  /* Detail page: stack logo and meta vertically */
+  .detail-top {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .detail-name { font-size: var(--font-size-2xl); }
+
+  /* Grid: 2 columns on tablet */
+  .tool-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  /* Info cards: 2 per row */
+  .info-cards { gap: var(--space-3); }
+  .info-card  { min-width: calc(50% - var(--space-3) / 2); }
+
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 480px)
+   ══════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+
+  :root {
+    --card-width: 140px;
+    --page-padding: 4vw;
+  }
+
+  /* Hero */
+  .hero-title    { font-size: var(--font-size-xl); }
+  .hero-subtitle { font-size: var(--font-size-sm); }
+
+  .hero-actions { flex-direction: column; }
+  .btn { width: 100%; justify-content: center; }
+
+  /* Grid: 2 columns minimum on small phones */
+  .tool-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+
+  .page-title  { font-size: var(--font-size-2xl); }
+  .detail-name { font-size: var(--font-size-xl); }
+
+  /* Info cards: stack on small mobile */
+  .info-card { min-width: 100%; }
+
+  /* Search form: slightly smaller */
+  .search-input { width: 80px; font-size: var(--font-size-xs); }
+  .search-form  { padding: 0 var(--space-3) 0 var(--space-2); }
+
+  .footer-links { display: none; }
+
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   Ensure focus states are visible for keyboard navigation.
+   We keep the browser's default outline but style it nicely.
+   ══════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--color-red);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration:  0.01ms !important;
+  }
+}

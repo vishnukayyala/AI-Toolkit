@@ -1,0 +1,149 @@
+{#
+  search_results.html — Search Results Page
+  Extends base.html.
+
+  Data from app.py's search() route:
+    - query        : str  → the search term the user typed (e.g. "image")
+    - results      : list → list of matching tool dicts
+    - result_count : int  → len(results), used in the heading
+
+  INTERVIEW TIP: Server-side search with GET means:
+  - No JavaScript needed for filtering
+  - Search URL is shareable: /search?q=image
+  - Pressing Enter or the Search button both work
+  - Browser history works normally (back button goes to previous search)
+#}
+{% extends "base.html" %}
+
+{% block title %}
+  {% if query %}
+    "{{ query }}" — Search Results · AI Toolkit
+  {% else %}
+    Search · AI Toolkit
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="page-body">
+
+  {# ────────────────────────────────────────────────────
+     SEARCH HEADER
+  ──────────────────────────────────────────────────── #}
+  <header class="page-header">
+    {% if query %}
+      <h1 class="page-title">
+        {# Show how many results were found #}
+        {% if result_count == 0 %}
+          No results for "<span class="highlight">{{ query }}</span>"
+        {% elif result_count == 1 %}
+          1 result for "<span class="highlight">{{ query }}</span>"
+        {% else %}
+          {{ result_count }} results for "<span class="highlight">{{ query }}</span>"
+        {% endif %}
+      </h1>
+    {% else %}
+      {# If user submitted an empty search #}
+      <h1 class="page-title">What are you looking for?</h1>
+    {% endif %}
+
+    {# Breadcrumb / navigation shortcut #}
+    <a href="{{ url_for('home') }}" class="back-link">← Back to all tools</a>
+  </header>
+
+  {# ────────────────────────────────────────────────────
+     RESULTS GRID
+  ──────────────────────────────────────────────────── #}
+  {% if results %}
+
+  <div class="tool-grid" role="list" aria-label="Search results">
+    {% for tool in results %}
+
+    {#
+      Grid card — same two-sibling-<a> structure as the homepage.
+      Using role="listitem" on the card for better accessibility.
+    #}
+    <div class="tool-card grid-card" role="listitem">
+
+      {# Top section — clicking goes to official website #}
+      <a href="{{ tool.website }}"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="card-link-main"
+         aria-label="Visit {{ tool.name }} official website (opens in new tab)">
+
+        <div class="card-logo" style="background: {{ tool.color | rgba(0.18) }};">
+          {{ tool.logo }}
+        </div>
+
+        <div class="card-overlay">
+          <span class="overlay-text">Open ↗</span>
+        </div>
+
+      </a>
+
+      {# Text body #}
+      <div class="card-body">
+        <span class="card-name">{{ tool.name }}</span>
+        <span class="card-cat">
+          <a href="{{ url_for('category', category_name=tool.category) }}"
+             class="card-cat-link">
+            {{ emojis.get(tool.category, '') }} {{ tool.category }}
+          </a>
+        </span>
+        <p class="card-desc">{{ tool.description[:90] }}…</p>
+      </div>
+
+      {# Details link to our Flask page #}
+      <a href="{{ url_for('tool_detail', tool_id=tool.id) }}"
+         class="card-link-details"
+         aria-label="View details for {{ tool.name }}">
+        More Info
+      </a>
+
+    </div>{# /tool-card #}
+
+    {% endfor %}
+  </div>{# /tool-grid #}
+
+  {% else %}
+
+  {# ────────────────────────────────────────────────────
+     EMPTY STATE — shown when no results found
+     Good UX practice: never show a blank page.
+     Give the user something to do next.
+  ──────────────────────────────────────────────────── #}
+  <div class="empty-state" role="status" aria-live="polite">
+    <div class="empty-icon">🔍</div>
+    <h2 class="empty-title">
+      {% if query %}
+        No tools match "{{ query }}"
+      {% else %}
+        Type something to search
+      {% endif %}
+    </h2>
+    <p class="empty-message">
+      {% if query %}
+        Try a different keyword — like a task, a category, or a tool name.
+      {% else %}
+        Use the search bar above to find AI tools.
+      {% endif %}
+    </p>
+
+    {# Suggestion links to popular categories #}
+    <div class="empty-suggestions">
+      <p class="empty-suggestions-label">Browse by category:</p>
+      <div class="suggestion-pills">
+        {% for cat in categories %}
+        <a href="{{ url_for('category', category_name=cat) }}" class="pill">
+          {{ emojis.get(cat, '') }} {{ cat }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>{# /empty-state #}
+
+  {% endif %}
+
+</div>{# /page-body #}
+{% endblock %}

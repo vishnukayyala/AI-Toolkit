@@ -1,0 +1,182 @@
+{#
+  base.html — Base Template
+  All other templates extend this one using: {% extends "base.html" %}
+
+  INTERVIEW TIP: Template inheritance means we define the navbar and footer
+  ONCE here, and every other page inherits them automatically.
+  The {% block content %}{% endblock %} is a placeholder that child
+  templates fill in with their own content.
+
+  Jinja2 blocks:
+  - {% block title %}  → lets each page set its own browser tab title
+  - {% block content %}→ where each page's unique body content goes
+#}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Discover 50+ of the best AI tools — Netflix-style." />
+
+  {# block title: child templates can override this #}
+  <title>{% block title %}AI Toolkit — Discover the Best AI Tools{% endblock %}</title>
+
+  {# Google Fonts — Inter (same font Netflix uses) #}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  {#
+    url_for('static', filename='style.css') generates the correct URL
+    for our static file. This works even if the app is deployed to a
+    subdirectory or with a different prefix.
+  #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+{# ──────────────────────────────────────────────────────
+   NAVBAR — fixed at the top of every page
+   'categories' and 'emojis' come from the context_processor
+   in app.py, so they're available on every page automatically.
+   ────────────────────────────────────────────────────── #}
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-inner">
+
+    {# Logo — links back to homepage #}
+    <a href="{{ url_for('home') }}" class="navbar-logo" aria-label="AI Toolkit Home">
+      ⚡ AI Toolkit
+    </a>
+
+    {# Category navigation links (desktop) #}
+    <div class="navbar-cats" role="list">
+
+      {# "All" resets to the homepage with all categories #}
+      <a href="{{ url_for('home') }}"
+         class="nav-cat {% if request.endpoint == 'home' and not request.args.get('q') %}active{% endif %}"
+         role="listitem">
+        All
+      </a>
+
+      {#
+        Loop through all categories (injected by context_processor).
+        url_for('category', category_name=cat) generates: /category/Writing
+        Flask handles URL-encoding of spaces automatically.
+        request.endpoint is the name of the current route function.
+        request.view_args holds the URL parameters of the current request.
+      #}
+      {% for cat in categories %}
+      <a href="{{ url_for('category', category_name=cat) }}"
+         class="nav-cat {% if request.endpoint == 'category' and request.view_args.get('category_name') == cat %}active{% endif %}"
+         role="listitem">
+        {# Shorten "Image Generation" → "Image Gen" to save navbar space #}
+        {{ cat.replace(' Generation', ' Gen') }}
+      </a>
+      {% endfor %}
+
+    </div>{# /navbar-cats #}
+
+    {# Search form — submits to /search?q=... via GET #}
+    <form action="{{ url_for('search') }}" method="GET" class="search-form" role="search">
+      <input
+        type="text"
+        name="q"
+        class="search-input"
+        placeholder="Search AI tools..."
+        aria-label="Search AI tools"
+        autocomplete="off"
+        {# Pre-fill with current query if we're on the search page #}
+        value="{{ request.args.get('q', '') }}"
+      />
+      <button type="submit" class="search-btn" aria-label="Search">
+        {# Search icon as inline SVG — no icon library needed #}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </form>
+
+    {# Hamburger button — shown only on mobile (CSS controls visibility) #}
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+  </div>{# /navbar-inner #}
+
+  {# Mobile category menu — slides down when hamburger is clicked #}
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <a href="{{ url_for('home') }}"
+       class="nav-cat {% if request.endpoint == 'home' %}active{% endif %}">
+      All
+    </a>
+    {% for cat in categories %}
+    <a href="{{ url_for('category', category_name=cat) }}"
+       class="nav-cat {% if request.endpoint == 'category' and request.view_args.get('category_name') == cat %}active{% endif %}">
+      {{ emojis.get(cat, '') }} {{ cat }}
+    </a>
+    {% endfor %}
+  </div>
+
+</nav>{# /navbar #}
+
+
+{# ──────────────────────────────────────────────────────
+   MAIN CONTENT AREA
+   Child templates fill this block with their own content.
+   ────────────────────────────────────────────────────── #}
+<main id="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+
+{# ──────────────────────────────────────────────────────
+   FOOTER
+   ────────────────────────────────────────────────────── #}
+<footer class="footer" role="contentinfo">
+  <div class="footer-inner">
+    <span class="footer-logo">⚡ AI Toolkit</span>
+    <span class="footer-divider">·</span>
+    <span>Built by Vishnu</span>
+    <span class="footer-divider">·</span>
+    <span>2025</span>
+    <div class="footer-links">
+      <a href="#" class="footer-link">GitHub</a>
+      <a href="#" class="footer-link">Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+
+{#
+  MINIMAL JAVASCRIPT — only 3 lines, all explainable in an interview:
+
+  Line 1: Listen for the 'scroll' event on the window
+  Line 2: Toggle the 'scrolled' CSS class on the navbar based on scroll position
+           classList.toggle(class, condition) adds the class if condition is true,
+           removes it if false. { passive: true } is a performance hint.
+  Line 3: Hamburger button toggles the mobile menu open/closed.
+#}
+<script>
+  // Navbar: become more opaque when user scrolls down
+  window.addEventListener('scroll', function() {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // Mobile hamburger menu toggle
+  var hamburger = document.getElementById('hamburger');
+  var mobileMenu = document.getElementById('mobile-menu');
+  if (hamburger) {
+    hamburger.addEventListener('click', function() {
+      var isOpen = mobileMenu.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+      mobileMenu.setAttribute('aria-hidden', !isOpen);
+    });
+  }
+</script>
+
+</body>
+</html>

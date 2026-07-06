@@ -1,0 +1,184 @@
+{#
+  tool_detail.html — Individual Tool Detail Page
+  Extends base.html. No modal = no JavaScript needed.
+
+  Data from app.py's tool_detail() route:
+    - tool    : dict → the single tool being viewed
+    - related : list → up to 4 other tools in the same category
+
+  INTERVIEW TIP: Using a full page instead of a modal means:
+  - Each tool has a unique, shareable URL (/tool/1)
+  - No JavaScript needed to open/close anything
+  - The browser back button just works
+  - Crawlers can index every tool (better SEO)
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ tool.name }} — {{ tool.category }} AI Tool · AI Toolkit{% endblock %}
+
+{% block content %}
+
+{# ──────────────────────────────────────────────────────
+   TOOL HERO — full-width coloured header
+   Brand colour used as a soft background gradient.
+   The gradient darkens toward the bottom so text stays readable.
+   ────────────────────────────────────────────────────── #}
+<div class="detail-hero"
+     style="background: linear-gradient(135deg, {{ tool.color | rgba(0.25) }} 0%, {{ tool.color | rgba(0.05) }} 100%);"
+     aria-label="{{ tool.name }} tool header">
+
+  <div class="detail-hero-inner">
+
+    {# Back navigation — no JavaScript, just a link #}
+    <a href="{{ url_for('home') }}" class="back-link detail-back">← Back to all tools</a>
+
+    <div class="detail-top">
+
+      {# Big logo #}
+      <div class="detail-logo" style="background: {{ tool.color | rgba(0.22) }}; border-color: {{ tool.color | rgba(0.45) }};">
+        {{ tool.logo }}
+      </div>
+
+      <div class="detail-meta">
+        {# Tool name #}
+        <h1 class="detail-name">{{ tool.name }}</h1>
+
+        {# Category link + trending badge #}
+        <div class="detail-tags">
+          <a href="{{ url_for('category', category_name=tool.category) }}"
+             class="tag tag-category">
+            {{ emojis.get(tool.category, '🔧') }} {{ tool.category }}
+          </a>
+          {% if tool.get('trending') %}
+          <span class="tag tag-trending">🔥 Trending</span>
+          {% endif %}
+        </div>
+
+        {# Full description (no truncation on the detail page) #}
+        <p class="detail-description">{{ tool.description }}</p>
+
+        {# PRIMARY CTA: Go to the tool's official website #}
+        <a href="{{ tool.website }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-primary btn-large"
+           aria-label="Visit {{ tool.name }} official website (opens in new tab)">
+          Visit {{ tool.name }} →
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</div>{# /detail-hero #}
+
+
+{# ──────────────────────────────────────────────────────
+   TOOL DETAILS BODY
+   ────────────────────────────────────────────────────── #}
+<div class="page-body detail-body">
+
+  {# ────────────────────────────────────────────────────
+     INFO CARDS ROW
+  ──────────────────────────────────────────────────── #}
+  <div class="info-cards">
+
+    <div class="info-card">
+      <span class="info-label">Category</span>
+      <span class="info-value">
+        {{ emojis.get(tool.category, '🔧') }} {{ tool.category }}
+      </span>
+    </div>
+
+    <div class="info-card">
+      <span class="info-label">Status</span>
+      <span class="info-value">
+        {% if tool.get('trending') %}
+          🔥 Trending
+        {% else %}
+          ✅ Available
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="info-card">
+      <span class="info-label">Website</span>
+      <a href="{{ tool.website }}"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="info-value info-link">
+        {{ tool.website.replace('https://', '') }}
+      </a>
+    </div>
+
+  </div>{# /info-cards #}
+
+
+  {# ────────────────────────────────────────────────────
+     RELATED TOOLS — same category, max 4 shown
+     from: app.py → related = [t for t in tools if t["category"] == ...][:4]
+  ──────────────────────────────────────────────────── #}
+  {% if related %}
+  <section class="related-section" aria-label="Related tools in {{ tool.category }}">
+    <h2 class="section-title">
+      More {{ emojis.get(tool.category, '') }} {{ tool.category }} Tools
+    </h2>
+
+    <div class="tool-grid related-grid">
+      {% for rel in related %}
+
+      <div class="tool-card grid-card">
+
+        <a href="{{ rel.website }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="card-link-main"
+           aria-label="Visit {{ rel.name }} official website (opens in new tab)">
+
+          <div class="card-logo" style="background: {{ rel.color | rgba(0.18) }};">
+            {{ rel.logo }}
+          </div>
+          <div class="card-overlay">
+            <span class="overlay-text">Open ↗</span>
+          </div>
+
+        </a>
+
+        <div class="card-body">
+          <span class="card-name">{{ rel.name }}</span>
+          <p class="card-desc">{{ rel.description[:80] }}…</p>
+        </div>
+
+        <a href="{{ url_for('tool_detail', tool_id=rel.id) }}"
+           class="card-link-details"
+           aria-label="View details for {{ rel.name }}">
+          More Info
+        </a>
+
+      </div>
+
+      {% endfor %}
+    </div>
+
+  </section>
+  {% endif %}
+
+
+  {# ────────────────────────────────────────────────────
+     BROWSE OTHER CATEGORIES
+  ──────────────────────────────────────────────────── #}
+  <section class="related-section" aria-label="Browse categories">
+    <h2 class="section-title">Browse All Categories</h2>
+    <div class="suggestion-pills">
+      {% for cat in categories %}
+      <a href="{{ url_for('category', category_name=cat) }}"
+         class="pill {% if cat == tool.category %}pill-active{% endif %}">
+        {{ emojis.get(cat, '') }} {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+</div>{# /detail-body #}
+
+{% endblock %}

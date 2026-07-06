@@ -1,0 +1,93 @@
+{#
+  category.html — Category Page
+  Extends base.html.
+
+  Data from app.py's category() route:
+    - category_name : str  → e.g. "Image Generation"
+    - cat_tools     : list → all tools in this category
+    - emoji         : str  → category emoji from CATEGORY_EMOJIS
+
+  URL format: /category/Writing
+              /category/Image%20Generation   (Flask encodes spaces automatically)
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ emoji }} {{ category_name }} AI Tools · AI Toolkit{% endblock %}
+
+{% block content %}
+<div class="page-body">
+
+  {# ────────────────────────────────────────────────────
+     CATEGORY HEADER
+  ──────────────────────────────────────────────────── #}
+  <header class="page-header category-header">
+    <div class="category-hero-icon">{{ emoji }}</div>
+    <h1 class="page-title">{{ category_name }}</h1>
+    <p class="category-subtitle">
+      {{ cat_tools | length }} tool{% if cat_tools | length != 1 %}s{% endif %} in this category
+    </p>
+    <a href="{{ url_for('home') }}" class="back-link">← All categories</a>
+  </header>
+
+  {# ────────────────────────────────────────────────────
+     TOOLS GRID — same structure as search results
+  ──────────────────────────────────────────────────── #}
+  <div class="tool-grid" role="list" aria-label="{{ category_name }} tools">
+    {% for tool in cat_tools %}
+
+    <div class="tool-card grid-card" role="listitem">
+
+      <a href="{{ tool.website }}"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="card-link-main"
+         aria-label="Visit {{ tool.name }} official website (opens in new tab)">
+
+        <div class="card-logo" style="background: {{ tool.color | rgba(0.18) }};">
+          {{ tool.logo }}
+        </div>
+
+        <div class="card-overlay">
+          <span class="overlay-text">Open ↗</span>
+        </div>
+
+      </a>
+
+      <div class="card-body">
+        <span class="card-name">{{ tool.name }}</span>
+        {# Trending badge #}
+        {% if tool.get('trending') %}
+        <span class="trending-badge" aria-label="Trending">🔥 Trending</span>
+        {% endif %}
+        <p class="card-desc">{{ tool.description[:90] }}…</p>
+      </div>
+
+      <a href="{{ url_for('tool_detail', tool_id=tool.id) }}"
+         class="card-link-details"
+         aria-label="View details for {{ tool.name }}">
+        More Info
+      </a>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ────────────────────────────────────────────────────
+     BROWSE OTHER CATEGORIES
+  ──────────────────────────────────────────────────── #}
+  <section class="related-section" aria-label="Other categories">
+    <h2 class="section-title">Browse Other Categories</h2>
+    <div class="suggestion-pills">
+      {% for cat in categories %}
+      {# Skip current category — no point linking to yourself #}
+      {% if cat != category_name %}
+      <a href="{{ url_for('category', category_name=cat) }}" class="pill">
+        {{ emojis.get(cat, '') }} {{ cat }}
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{#
+  index.html — Homepage Template
+  Extends base.html and fills in the {% block content %} section.
+
+  Data available from app.py's home() route:
+    - featured  : dict  → the "Tool of the Day" (ChatGPT)
+    - trending  : list  → up to 5 trending tools
+    - grouped   : dict  → {category_name: [list of tools], ...}
+    - hero_rgba : str   → "rgba(16, 163, 127, 0.28)" — brand colour as CSS rgba
+
+  INTERVIEW TIP: We don't need JavaScript for any of this.
+  Python built all the data structures; Jinja2 renders the HTML.
+  CSS handles hover effects with :hover pseudo-class.
+#}
+{% extends "base.html" %}
+
+{# Override the default browser tab title for this page #}
+{% block title %}AI Toolkit — Discover the Best AI Tools{% endblock %}
+
+{% block content %}
+
+{# ──────────────────────────────────────────────────────
+   HERO SECTION — Billboard for the featured tool
+   hero_rgba is computed in Python: hex_to_rgba(featured.color, 0.28)
+   We use it as an inline background gradient so each featured tool
+   gets its own branded colour — no JavaScript needed.
+   ────────────────────────────────────────────────────── #}
+<section class="hero" style="background: linear-gradient(to right, {{ hero_rgba }} 0%, transparent 70%), linear-gradient(to bottom, transparent 50%, #141414 100%), url('') center/cover no-repeat;">
+  <div class="hero-content">
+
+    {# Badge label #}
+    <span class="hero-badge">⭐ Tool of the Day</span>
+
+    {# Featured tool logo + name #}
+    <div class="hero-logo" style="background: {{ featured.color | rgba(0.18) }};">
+      {{ featured.logo }}
+    </div>
+    <h1 class="hero-title">{{ featured.name }}</h1>
+    <p class="hero-subtitle">{{ featured.description }}</p>
+
+    {# Category tag #}
+    <a href="{{ url_for('category', category_name=featured.category) }}" class="hero-tag">
+      {{ emojis.get(featured.category, '') }} {{ featured.category }}
+    </a>
+
+    {# CTA buttons #}
+    <div class="hero-actions">
+      {# Primary: open official website in new tab #}
+      <a href="{{ featured.website }}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-primary">
+        Visit {{ featured.name }} →
+      </a>
+
+      {# Secondary: view our detail page for more info #}
+      <a href="{{ url_for('tool_detail', tool_id=featured.id) }}"
+         class="btn btn-secondary">
+        More Info
+      </a>
+    </div>
+
+  </div>
+</section>{# /hero #}
+
+
+{# ──────────────────────────────────────────────────────
+   PAGE BODY — all rows below the hero
+   ────────────────────────────────────────────────────── #}
+<div class="page-body">
+
+
+  {# ────────────────────────────────────────────────────
+     TRENDING ROW — the top 5 tools with rank numbers
+     Jinja2's loop.index gives us 1, 2, 3, 4, 5.
+  ──────────────────────────────────────────────────── #}
+  <section class="content-row" aria-label="Trending AI Tools">
+    <h2 class="row-title">🔥 Trending Now</h2>
+
+    <div class="row-track">
+      {% for tool in trending %}
+      <div class="tool-card trending-card">
+
+        {# Big rank number in background — pure CSS, no JS #}
+        <span class="rank-number" aria-hidden="true">{{ loop.index }}</span>
+
+        {# Logo box tinted with the tool's brand colour #}
+        <div class="card-logo" style="background: {{ tool.color | rgba(0.20) }};">
+          {{ tool.logo }}
+        </div>
+
+        {# Tool info #}
+        <div class="card-info">
+          <span class="card-name">{{ tool.name }}</span>
+          <span class="card-cat">{{ tool.category }}</span>
+        </div>
+
+        {# Action links — TWO SIBLING <a> TAGS, not nested.
+           Nesting <a> inside <a> is invalid HTML.
+           The outer <div class="tool-card"> holds both links. #}
+
+        {# Link 1: Opens the tool's official website in a new tab #}
+        <a href="{{ tool.website }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="card-link-main"
+           aria-label="Visit {{ tool.name }} official website">
+          <span class="card-visit-hint">Visit ↗</span>
+        </a>
+
+        {# Link 2: Our internal Flask detail page — no JS, no modal #}
+        <a href="{{ url_for('tool_detail', tool_id=tool.id) }}"
+           class="card-link-details"
+           aria-label="View details for {{ tool.name }}">
+          Details
+        </a>
+
+      </div>
+      {% endfor %}
+    </div>
+
+  </section>{# /trending row #}
+
+
+  {# ────────────────────────────────────────────────────
+     CATEGORY ROWS — one row per category
+     grouped is {category_name: [tools_list], ...}
+     Jinja2's .items() iterates as (key, value) pairs.
+  ──────────────────────────────────────────────────── #}
+  {% for cat_name, cat_tools in grouped.items() %}
+  <section class="content-row" aria-label="{{ cat_name }} tools">
+
+    {# Row header: emoji + name + "See all" link #}
+    <div class="row-header">
+      <h2 class="row-title">
+        {{ emojis.get(cat_name, '🔧') }} {{ cat_name }}
+      </h2>
+      <a href="{{ url_for('category', category_name=cat_name) }}" class="row-see-all">
+        See all →
+      </a>
+    </div>
+
+    <div class="row-track">
+      {% for tool in cat_tools %}
+
+      {# ── CARD ──
+         Structure:
+           <div class="tool-card">
+             <a class="card-link-main">...</a>   ← external link
+             <a class="card-link-details">...</a> ← internal detail page
+           </div>
+         Two sibling <a> tags inside a <div> — valid HTML.
+         Cannot nest <a> inside <a>.
+      #}
+      <div class="tool-card">
+
+        {# Logo + hover overlay area — clicking goes to official website #}
+        <a href="{{ tool.website }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="card-link-main"
+           aria-label="Visit {{ tool.name }} official website (opens in new tab)">
+
+          <div class="card-logo" style="background: {{ tool.color | rgba(0.18) }};">
+            {{ tool.logo }}
+          </div>
+
+          {# Overlay that appears on :hover (CSS only) #}
+          <div class="card-overlay">
+            <span class="overlay-text">Open ↗</span>
+          </div>
+
+        </a>
+
+        {# Card text info — always visible #}
+        <div class="card-body">
+          <span class="card-name">{{ tool.name }}</span>
+          <span class="card-cat">
+            <a href="{{ url_for('category', category_name=tool.category) }}"
+               class="card-cat-link"
+               aria-label="Browse {{ tool.category }} category">
+              {{ tool.category }}
+            </a>
+          </span>
+          <p class="card-desc">{{ tool.description[:80] }}…</p>
+        </div>
+
+        {# Details link — bottom of card — goes to our Flask detail page #}
+        <a href="{{ url_for('tool_detail', tool_id=tool.id) }}"
+           class="card-link-details"
+           aria-label="View details for {{ tool.name }}">
+          More Info
+        </a>
+
+      </div>{# /tool-card #}
+
+      {% endfor %}{# /for tool #}
+    </div>{# /row-track #}
+
+  </section>{# /content-row #}
+  {% endfor %}{# /for cat_name, cat_tools #}
+
+
+</div>{# /page-body #}
+
+{% endblock %}
