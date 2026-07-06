@@ -1,4 +1,4 @@
-# ⚡ AI Toolkit
+#  AI Toolkit
 
 A Netflix-style AI tool discovery platform — browse, search, and compare 53 AI tools across 8 categories, built with server-rendered Python (no frontend framework, no database, no JavaScript beyond a 3-line navbar effect).
 
